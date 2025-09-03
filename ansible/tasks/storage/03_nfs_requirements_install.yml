@@ -1,0 +1,35 @@
+- name: Install NFS server
+  ansible.builtin.apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: yes
+
+- name: Ensure NFS service is running and enabled
+  systemd:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes
+
+- name: Create NFS export directory
+  file:
+    path: /mnt/swrmd_nfs
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure NFS exports
+  copy:
+    dest: /etc/exports
+    content: |
+      {% for host in groups['managers'] %}
+      /mnt/swrmd_nfs {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
+      {% endfor %}
+      {% for host in groups['workers'] %}
+      /mnt/swrmd_nfs {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
+      {% endfor %}
+
+# Should add handlers and listenners later
+- name: Reload NFS exports
+  command: exportfs -ra
+  become: yes

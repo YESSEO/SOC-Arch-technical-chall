@@ -1,0 +1,18 @@
+- name: Ensure local mount point exists
+  file:
+    path: /mnt/swrmd_nfs
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Mount NFS share from data server and persist in /etc/fstab
+  mount:
+    src: "{{ hostvars[groups['data'][0]].ansible_host }}:/mnt/swrmd_nfs"
+    path: /mnt/swrmd_nfs
+    fstype: nfs
+    opts: rw,sync,hard,intr
+    state: mounted
+    dump: 0
+    passno: 0
+
