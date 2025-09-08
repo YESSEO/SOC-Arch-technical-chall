@@ -1,36 +1,42 @@
-# - name: Making sure all hosts are available
-#   hosts: all
-#   become: yes
-#   tasks:
-#     - include_tasks: ../tasks/general/01_ping.yml
+- name: Making sure all hosts are available
+  hosts: all
+  become: yes
+  tasks:
+    - include_tasks: ../tasks/general/01_ping.yml
 
-# # Docker installation
-# - name: Install Docker on managers and workers
-#   hosts: managers:workers
-#   become: yes
-#   tasks:
-#     - include_tasks: ../tasks/docker/02_docker_install.yml
+# Docker installation
+- name: Install Docker on managers and workers
+  hosts: managers:workers
+  become: yes
+  tasks:
+    - include_tasks: ../tasks/docker/02_docker_install.yml
 
-# # Building the storage server
-# - name: Install NFS packages on data server
-#   hosts: maangers:workers
-#   become: yes
-#   tasks:
-#     - include_tasks: ../tasks/storage/03_nfs_requirements_install.yml
+# Building the storage server
+- name: Install NFS packages on data server
+  hosts: data
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - include_tasks: ../tasks/storage/03_nfs_requirements_install.yml
 
-# # Install NFS-commons
-# - name: Install NFS Common on, Managers & Workers
-#   hosts: mangers:workers
-#   become: yes
-#   tasks:
-#     - include_tasks: ../tasks/storage/04_nfs_common_requirents_install.yml
+# Install NFS-commons
+- name: Install NFS Common on, Managers & Workers
+  hosts: managers:workers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - include_tasks: ../tasks/storage/04_nfs_common_requirents_install.yml
 
-# # Mount the NFS share
-# - name: Mounting Share on, Managers & Workers
-#   hosts: mangers:workers
-#   become: yes
-#   tasks:
-#     - include_tasks: ../tasks/storage/05_nfs_mounting_share.yml
+# Mount the NFS share
+- name: Mounting Share on, Managers & Workers
+  hosts: managers:workers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - include_tasks: ../tasks/storage/05_nfs_mounting_share.yml
 
 # Initiate and Join the Swarm
 - name: Initiating the Swarm
@@ -39,10 +45,31 @@
   tasks:
     - include_tasks: ../tasks/docker/06_docker_swarm_setup.yml
 
-
 # Joining the Swarm
 - name: Join swarm
   hosts: workers
   become: yes
   tasks:
     - include_tasks: ../tasks/docker/07_docker_swarm_join.yml
+
+# Copy wazuh-docker to NFS
+- name: Copy wazuh-docker folder to NFS share
+  hosts: managers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - include_tasks: ../tasks/storage/08_copy_wazuh_docker.yml
+
+# Create Shared storage dirs For wazuh
+- name: Create Wazuh NFS directories
+  hosts: managers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - include_tasks: ../tasks/storage/10_create_wazuh_nfs_shared_storage_dirs.yml
+
+
+
+
