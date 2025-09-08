@@ -64,3 +64,40 @@ fi
 ansible-playbook -i ansible/inventory.ini ansible/playbooks/sites.yaml --ask-become -vvv
 
 ```
+
+# Combining the pieces
+
+## Ansible Vault
+
+- Vault Example
+> [!CAUTION]
+> This is default creds from the official Wazuh docker page, Please make sure you change this creds before deployment, this is meant only for demonstration purposes only
+
+- ansible/group\_vars/secrets/vault.example.yaml
+```yaml
+# Indexer/ Dashboard
+INDEXER_USERNAME: admin
+INDEXER_PASSWORD: SecretPassword
+
+# API/ Master creds
+API_USERNAME: wazuh-wui
+API_PASSWORD: MyS3cr37P450r.*-
+
+# KIBANA DASHBOARD
+DASHBOARD_USERNAME: kibanaserver
+DASHBOARD_PASSWORD: kibanaserver
+```
+- Creating a vault
+
+```
+# Create a new vault
+$ ansible-vault create ansible/group_vars/secrets/vault.yml                                                                                                               
+New Vault password:  
+
+# Encrypt vault
+$ ansible-vault encrypt  ansible/group_vars/secrets/vault.yml                                                                                                             
+
+New Vault password: 
+Confirm New Vault password: 
+Encryption successful
+```
