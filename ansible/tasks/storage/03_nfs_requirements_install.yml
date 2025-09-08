@@ -12,7 +12,7 @@
 
 - name: Create NFS export directory
   file:
-    path: /mnt/swrmd_nfs
+    path: "{{ nfs_mount_point }}"
     state: directory
     owner: root
     group: root
@@ -23,10 +23,10 @@
     dest: /etc/exports
     content: |
       {% for host in groups['managers'] %}
-      /mnt/swrmd_nfs {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
+      {{ nfs_mount_point }}/ {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
       {% endfor %}
       {% for host in groups['workers'] %}
-      /mnt/swrmd_nfs {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
+      {{ nfs_mount_point }}/ {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
       {% endfor %}
 
 # Should add handlers and listenners later

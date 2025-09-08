@@ -1,0 +1,8 @@
+---
+- name: Copy wazuh-docker folder to NFS share
+  copy:
+    src: "{{base_dir}}/docker/wazuh-docker/"
+    dest: "{{ nfs_mount_point }}/wazuh-docker/"
+    owner: root
+    group: root
+    mode: '0755'
