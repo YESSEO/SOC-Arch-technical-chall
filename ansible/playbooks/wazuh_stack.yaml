@@ -1,0 +1,32 @@
+# Generate the Indexers certs
+- name: Run indexer certificate generator container
+  hosts: managers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - name: Run the generator container
+      shell: "docker compose -f {{ indexers_cert_file }} run --rm generator"
+      register: generator_output
+
+    - name: Show generator output
+      debug:
+        var: generator_output.stdout_lines
+
+# Deploy Wazuh Docker stack
+- name: Deploy Wazuh Docker stack
+  hosts: managers
+  become: yes
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - name: Deploy Wazuh stack
+      shell: "docker stack deploy -c {{ wazuh_compose_file }} wazuh"
+      args:
+        chdir: "{{ nfs_mount_point }}/wazuh-docker/multi-node"
+      register: deploy_output
+
+    - name: Show deployment output
+      debug:
+        var: deploy_output.stdout_lines
+
