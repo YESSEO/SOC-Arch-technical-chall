@@ -1,0 +1,8 @@
+# ansible/group_vars/all.yml
+nfs_mount_point: /mnt/swrmd_nfs
+base_dir: /home/ceasar/fun/build/cirescyber/soc/SOC-Arch-technical-chall
+wazuh_base: "{{ nfs_mount_point }}/wazuh"
+generate_certs_path: "/generate-indexer-certs.yml"
+docker_wazuh_base: "wazuh-docker/multi-node"
+wazuh_compose_file: "{{ nfs_mount_point }}/{{ docker_wazuh_base }}/docker-compose.yml"
+indexers_cert_file: "{{ nfs_mount_point }}/{{ docker_wazuh_base }}/generate-indexer-certs.yml"
