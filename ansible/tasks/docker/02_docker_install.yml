@@ -2,7 +2,7 @@
   ansible.builtin.apt:
     name: "{{ item }}" # Display each package from loop
     state: present
-    update_cache: yes
+    update_cache: true
   loop:
     - apt-transport-https
     - ca-certificates
@@ -29,7 +29,7 @@
     state: present
 
 - name: Ensure Docker service is running
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: started
-    enabled: yes
+    enabled: true

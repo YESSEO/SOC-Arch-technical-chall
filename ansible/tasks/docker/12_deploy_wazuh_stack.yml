@@ -1,0 +1,11 @@
+- name: Deploy Wazuh stack
+  ansible.builtin.command: "docker stack deploy -c {{ wazuh_compose_file }} wazuh"
+  args:
+    chdir: "{{ nfs_mount_point }}/wazuh-docker/multi-node"
+  register: deploy_output
+  failed_when: deploy_output.rc != 0
+  changed_when: deploy_output.rc == 0
+
+- name: Show deployment output
+  ansible.builtin.debug:
+    var: deploy_output.stdout_lines

@@ -2,7 +2,7 @@
 # Join worker nodes to the swarm
 
 - name: Join swarm as worker
-  shell: "{{ hostvars[groups['managers'][0]].worker_join_command }}"
+  ansible.builtin.command: "{{ hostvars[groups['managers'][0]].worker_join_command }}"
   register: swarm_join
-  failed_when: swarm_join.rc != 0 and
-    "'This node is already part of a swarm' not in swarm_join.stderr"
+  failed_when: swarm_join.rc not in [0, 1]
+  changed_when: swarm_join.rc == 0
