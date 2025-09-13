@@ -1,0 +1,22 @@
+- name: Making sure all hosts are available
+  hosts: all
+  become: true
+  tasks:
+   - name: Pinging Hosts
+     ansible.builtin.include_tasks: ../tasks/general/01_ping.yml
+
+- name: Install Trivy
+  hosts: managers
+  become: true
+  tasks:
+   - name: "Installing trivy"
+     ansible.builtin.include_tasks: ../tasks/trivy/13_install_trivy.yml
+
+- name: Trivy Scan
+  hosts: managers
+  become: true
+  vars_files:
+   - ../group_vars/all.yml
+  tasks:
+   - name: "Running trivy"
+     ansible.builtin.include_tasks: ../tasks/trivy/14_run_scans.yml
