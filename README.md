@@ -29,7 +29,7 @@ NFS_SERVER_HOSTNAME=node03-nfs_data
 # Initial IP's
 SWARM_MANAGER_IP=172.16.187.161
 SWARM_WORKER_IP=172.16.187.162
-NFS_SERVER_IP=172.16.187.164
+nfsserverip=172.16.187.164
 
 # Initial the users with SUDO privileges
 ANSIBLE_USER=ansible
@@ -71,12 +71,12 @@ ansible-playbook -i ansible/inventory.ini ansible/playbooks/sites.yaml --ask-bec
 
 - Vault Example
 > [!CAUTION]
-> This is default creds from the official Wazuh docker page, Please make sure you change this creds before deployment, this is meant only for demonstration purposes only
+> This Documentation uses the default creds from the official Wazuh docker page, Please make sure you change this creds before deployment, this is meant only for demonstration purposes only
 
 - ansible/group\_vars/secrets/vault.example.yaml
 ```yaml
 # Indexer/ Dashboard
-INDEXER_USERNAME: admin
+INDEXERUSERNAME: admin
 INDEXER_PASSWORD: SecretPassword
 
 # API/ Master creds
@@ -87,10 +87,10 @@ API_PASSWORD: MyS3cr37P450r.*-
 DASHBOARD_USERNAME: kibanaserver
 DASHBOARD_PASSWORD: kibanaserver
 ```
-- Creating a vault
 
+- Creating a vault
 ```
-# Create a new vault
+# Create a new vault and keep the same variables from the example
 $ ansible-vault create ansible/group_vars/secrets/vault.yml                                                                                                               
 New Vault password:  
 
@@ -101,3 +101,23 @@ New Vault password:
 Confirm New Vault password: 
 Encryption successful
 ```
+## Trivy
+
+#### Pipeline failure
+
+> Fail on CRITICAL/ HiGH
+> Displays the CVE's report
+> ASK if you would like to continue reguardless
+
+
+## TODOS
+
+1. How to deal with the Trivy Issue:
+ > Prompt user ?
+
+
+> Ansible: increase vm.max\_map\_count
+```shell
+$ sysctl -w vm.max_map_count=262144
+```
+#
