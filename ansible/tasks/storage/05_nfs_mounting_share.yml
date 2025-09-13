@@ -1,5 +1,5 @@
 - name: Ensure local mount point exists
-  file:
+  ansible.builtin.file:
     path: "{{ nfs_mount_point }}"
     state: directory
     owner: root
@@ -7,7 +7,7 @@
     mode: '0755'
 
 - name: Mount NFS share from data server and persist in /etc/fstab
-  mount:
+  ansible.posix.mount:
     src: "{{ hostvars[groups['data'][0]].ansible_host }}:{{ nfs_mount_point }}"
     path: "{{ nfs_mount_point }}"
     fstype: nfs
@@ -15,4 +15,3 @@
     state: mounted
     dump: 0
     passno: 0
-

@@ -2,25 +2,28 @@
   ansible.builtin.apt:
     name: nfs-kernel-server
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Ensure NFS service is running and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: nfs-kernel-server
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Create NFS export directory
-  file:
+  ansible.builtin.file:
     path: "{{ nfs_mount_point }}"
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: '0700'   # only root has access to the export folder itself
 
 - name: Configure NFS exports
-  copy:
+  ansible.builtin.copy:
     dest: /etc/exports
+    owner: root
+    group: root
+    mode: '0644'   # readable by system processes, not writable by others
     content: |
       {% for host in groups['managers'] %}
       {{ nfs_mount_point }}/ {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
@@ -29,7 +32,9 @@
       {{ nfs_mount_point }}/ {{ hostvars[host].ansible_host }}(rw,sync,no_subtree_check,anonuid=0,anongid=0,fsid=1)
       {% endfor %}
 
-# Should add handlers and listenners later
 - name: Reload NFS exports
-  command: exportfs -ra
-  become: yes
+  ansible.builtin.command: exportfs -ra
+  register: nfs_reload
+  failed_when: nfs_reload.rc != 0
+  changed_when: nfs_reload.rc == 0
+  become: true

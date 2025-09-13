@@ -1,5 +1,5 @@
 - name: Ensure the base wazuh directory exists for shared storage
-  file:
+  ansible.builtin.file:
     path: "{{ wazuh_base }}"
     state: directory
     owner: root
@@ -7,7 +7,7 @@
     mode: '0755'
 
 - name: Ensure all Wazuh subdirectories exist (Shared storage)
-  file:
+  ansible.builtin.file:
     path: "{{ wazuh_base }}/{{ item }}"
     state: directory
     owner: root

@@ -1,0 +1,40 @@
+- name: Ensure reports directory exists on controller
+  delegate_to: localhost
+  ansible.builtin.file:
+    path: "{{ base_dir }}/reports/trivy"
+    state: directory
+    mode: '0755'
+
+- name: Run Trivy scan on docker images
+  ansible.builtin.command: >
+    trivy image --severity HIGH,CRITICAL
+    --format json
+    --output /tmp/trivy-{{ item | regex_replace('[^a-zA-Z0-9]', '_') }}.json
+    {{ item }}
+  loop: "{{ docker_images }}"
+  register: trivy_results
+  changed_when: false
+
+- name: Copy Trivy reports back to controller
+  ansible.builtin.fetch:
+    src: "/tmp/trivy-{{ item | regex_replace('[^a-zA-Z0-9]', '_') }}.json"
+    dest: "{{ base_dir }}/reports/trivy/"
+    flat: true
+  loop: "{{ docker_images }}"
+
+- name: Parse Trivy reports and check for HIGH/CRITICAL vulnerabilities
+  delegate_to: localhost
+  ansible.builtin.command: >
+    jq '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length'
+    {{ base_dir }}/reports/trivy/trivy-{{ item | regex_replace('[^a-zA-Z0-9]', '_') }}.json
+  loop: "{{ docker_images }}"
+  register: vuln_counts
+  changed_when: false
+
+- name: Fail if HIGH/CRITICAL vulnerabilities found and ignore_trivy_vulns == 0
+  ansible.builtin.fail:
+    msg: >
+     HIGH/CRITICAL vulnerabilities found in docker images. Aborting deployment, {{ base_dir }}/reports/trivy/ to retrieve the reports"
+  when: >
+    ignore_trivy_vulns | int == 0 and
+    (vuln_counts.results | map(attribute='stdout') | map('int') | sum) > 0

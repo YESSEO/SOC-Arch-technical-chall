@@ -1,0 +1,10 @@
+- name: Download Trivy install script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh
+    dest: /tmp/trivy-install.sh
+    mode: '0755'
+
+- name: Run Trivy installer
+  ansible.builtin.command: sh /tmp/trivy-install.sh -b /usr/local/bin v0.66.0
+  args:
+    creates: /usr/local/bin/trivy
