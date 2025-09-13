@@ -1,75 +1,101 @@
-- name: Making sure all hosts are available
-  hosts: all
-  become: yes
-  tasks:
-    - include_tasks: ../tasks/general/01_ping.yml
-
 # Docker installation
 - name: Install Docker on managers and workers
   hosts: managers:workers
-  become: yes
+  become: true
   tasks:
-    - include_tasks: ../tasks/docker/02_docker_install.yml
+    - name: Installing docker packages
+      ansible.builtin.include_tasks: ../tasks/docker/02_docker_install.yml
 
 # Building the storage server
 - name: Install NFS packages on data server
   hosts: data
-  become: yes
+  become: true
   vars_files:
     - ../group_vars/all.yml
   tasks:
-    - include_tasks: ../tasks/storage/03_nfs_requirements_install.yml
+    - name: Install NFs packages
+      ansible.builtin.include_tasks: ../tasks/storage/03_nfs_requirements_install.yml
 
 # Install NFS-commons
 - name: Install NFS Common on, Managers & Workers
   hosts: managers:workers
-  become: yes
+  become: true
   vars_files:
     - ../group_vars/all.yml
   tasks:
-    - include_tasks: ../tasks/storage/04_nfs_common_requirents_install.yml
+    - name: Install nfs common tools
+      ansible.builtin.include_tasks: ../tasks/storage/04_nfs_common_requirents_install.yml
 
 # Mount the NFS share
 - name: Mounting Share on, Managers & Workers
   hosts: managers:workers
-  become: yes
+  become: true
   vars_files:
     - ../group_vars/all.yml
   tasks:
-    - include_tasks: ../tasks/storage/05_nfs_mounting_share.yml
+    - name: Mounting the shared NFS
+      ansible.builtin.include_tasks: ../tasks/storage/05_nfs_mounting_share.yml
+
+# Keep alived
+- name: Installing Keep alived
+  hosts: managers:workers
+  vars_files:
+    - ../group_vars/all.yml
+  tasks:
+    - name: Installing Packages
+      ansible.builtin.include_tasks: ../tasks/general/16_install_keepalivd.yml
+
+# VRRP Config
+- name: Configure Keepalived on Master
+  hosts: managers:workers
+  become: true
+  vars_files:
+    - ../group_vars/secrets/vault.yml
+    - ../group_vars/all.yml
+  tasks:
+    - name: Installing Packages
+      ansible.builtin.include_tasks: ../tasks/general/17_config_master_keepalived.yml
 
 # Initiate and Join the Swarm
 - name: Initiating the Swarm
   hosts: managers
-  become: yes
+  become: true
   tasks:
-    - include_tasks: ../tasks/docker/06_docker_swarm_setup.yml
+    - name: Init swarm token
+      ansible.builtin.include_tasks: ../tasks/docker/06_docker_swarm_setup.yml
 
 # Joining the Swarm
 - name: Join swarm
   hosts: workers
-  become: yes
+  become: true
   tasks:
-    - include_tasks: ../tasks/docker/07_docker_swarm_join.yml
+    - name: Joining swarm worker
+      ansible.builtin.include_tasks: ../tasks/docker/07_docker_swarm_join.yml
+
+# sysctl -w vm.max_map_count=262144
+- name: Presist vm.max_map_count
+  hosts: managers:workers
+  become: true
+  tasks:
+    - name: Increate vm.max_map_count
+      ansible.builtin.include_tasks: ../tasks/docker/15_increase_vm_max_map_count.yml
 
 # Copy wazuh-docker to NFS
 - name: Copy wazuh-docker folder to NFS share
   hosts: managers
-  become: yes
+  become: true
   vars_files:
     - ../group_vars/all.yml
   tasks:
-    - include_tasks: ../tasks/storage/08_copy_wazuh_docker.yml
+    - name: Copying wazuh-folders to share
+      ansible.builtin.include_tasks: ../tasks/storage/08_copy_wazuh_docker.yml
 
 # Create Shared storage dirs For wazuh
 - name: Create Wazuh NFS directories
   hosts: managers
-  become: yes
+  become: true
   vars_files:
     - ../group_vars/all.yml
   tasks:
-    - include_tasks: ../tasks/storage/10_create_wazuh_nfs_shared_storage_dirs.yml
-
-
-
-
+    - name: Creating wazuh NFS shared folders
+      ansible.builtin.include_tasks: ../tasks/storage/10_create_wazuh_nfs_shared_storage_dirs.yml
