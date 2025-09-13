@@ -1,0 +1,44 @@
+# --------------------------------------------
+# ---- Mapping global configs
+
+nfs_mount_point: ${NFS_BASE}
+base_dir: $PWD
+wazuh_base: "{{ nfs_mount_point }}/wazuh"
+generate_certs_path: "/generate-indexer-certs.yml"
+docker_wazuh_base: "wazuh-docker/multi-node"
+wazuh_compose_file: "{{ nfs_mount_point }}/{{ docker_wazuh_base }}/docker-compose.yml"
+indexers_cert_file: "{{ nfs_mount_point }}/{{ docker_wazuh_base }}/generate-indexer-certs.yml"
+nfsserverip: ${NFS_SERVER_IP}
+
+# --------------------------------------------
+# ---- Keepalived
+keepalived_vrrp_password: "{{ vault_keepalived_vrrp_password }}"
+virtual_ip: ${keepalived_virtual_ip}
+
+# --------------------------------------------
+# ---- Trivy
+
+# Ignore HIGH/CRITICAL errors, 0 Interupte pipline on HIGH/Critical Findings
+ignore_trivy_vulns: 1
+
+# Images to Scan
+docker_images:
+  - wazuh/wazuh-manager:4.12.0
+  - wazuh/wazuh-indexer:4.12.0
+  - wazuh/wazuh-dashboard:4.12.0
+  - nginx:stable
+
+# --------------------------------------------
+# ---- Ansible vault
+
+# Indexer/ Dashboard
+indexerusername: "{{ vault_indexer_username }}"
+indexerpassword: "{{ vault_indexer_password }}"
+
+# Master api
+apiusername: "{{ vault_api_username }}"
+apipassword: "{{ vault_api_password }}"
+
+# KIBANA Creds
+dashboardusername: "{{ vault_dashboard_username }}"
+dashboardpassowrd: "{{ vault_dashboard_password }}"
